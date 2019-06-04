@@ -1,0 +1,12 @@
+{
+  "name": "@things-factory/component-ui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "",
+  "scripts": {},
+  "dependencies": {
+    "lit-element": "^2.1.0"
+  },
+  "devDependencies": {}
+}
