@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit-element'
+import { html, css, LitElement } from 'lit-element'
 
 class CalendarUI extends LitElement {
   static get properties() {
@@ -8,97 +8,98 @@ class CalendarUI extends LitElement {
     }
   }
 
-  constructor() {
-    super()
-    this.date = new Date()
-    this.firstDay = new Date(this.date.getFullYear(), this.date.getMonth(), 1)
-    this.lastDay = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0)
-    // this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  static get styles() {
+    return css`
+      #calendar {
+        text-align: center;
+      }
+      .sunday {
+        color: red;
+      }
+      .saturday {
+        color: blue;
+      }
+    `
   }
 
   firstUpdated() {
-    // this.showCalendar(this.currentMonth, this.currentYear)
+    const date = new Date()
+    const firstDate = new Date(new Date().setDate(1))
+    const firstDay = firstDate.getDay()
+    const lastDate = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+
+    this.year = date.getFullYear()
+    this.month = date.getMonth() + 1
+    this.date = date.getDate()
+
+    this.shadowRoot.querySelector('#date-picker').value = `${this.year}-${
+      this.month < 10 ? `0${this.month}` : this.month
+    }-${this.date < 10 ? `0${this.date}` : this.date}`
+
+    this.dateList = this._computeDateList(firstDay, lastDate)
+
+    this.requestUpdate()
   }
 
   render() {
     return html`
-      <section>
-        <h2>Welcome To OPAone Calendar</h2>
+      <input id="date-picker" type="date" @change="${this._dateChanged}" />
+      <table class="calendar-table" id="calendar">
+        <thead>
+          <tr>
+            <th class="sunday">Sun</th>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th class="saturday">Sat</th>
+          </tr>
+        </thead>
 
-        <table class="table" id="calendar">
-          <thead>
-            <tr>
-              <th>Sun</th>
-              <th>Mon</th>
-              <th>Tue</th>
-              <th>Wed</th>
-              <th>Thu</th>
-              <th>Fri</th>
-              <th>Sat</th>
-            </tr>
-          </thead>
-
-          <tbody id="calendar-body">
-            ${this.date.map(
-              dateRow => html`
-                <tr>
-                  ${dateRow.map(
-                    (date, idx) =>
-                      html`
-                        <th class="${(idx + 1) % 7 == 0 ? 'sat' : (idx + 1) % 7 == 1 ? 'sun' : ''}">${date}</th>
-                      `
-                  )}
-                </tr>
-              `
-            )}
-          </tbody>
-        </table>
-      </section>
+        <tbody id="calendar-body">
+          ${(this.dateList || []).map(
+            dateRow => html`
+              <tr>
+                ${dateRow.map(
+                  (date, idx) => html`
+                    <td class="${idx === 0 ? 'sunday' : idx === 6 ? 'saturday' : ''}">${date}</td>
+                  `
+                )}
+              </tr>
+            `
+          )}
+        </tbody>
+      </table>
     `
   }
 
-  showCalendar(month, year) {
-    let firstDay = new Date(year, month).getDay()
-    this.tbl = this.shadowRoot.getElementById('calendar-body')
+  _computeDateList(firstDay, lastDate) {
+    let dateList = []
+    let row = []
+    // firstDay is 6
+    for (let i = 0; i < firstDay; i++) {
+      row.push('')
+    }
 
-    // tbl = document.getElementById('calendar-body') // body of the calendar
-
-    // clearing all previous cells
-    this.tbl.innerHTML = ''
-
-    // creating all cells
-    let date = 1
-    for (let i = 0; i < 6; i++) {
-      // creates a table row
-      const row = document.createElement('tr')
-
-      //creating individual cells, filing them up with data.
-      for (let j = 0; j < 7; j++) {
-        if (i === 0 && j < firstDay) {
-          const cell = document.createElement('td')
-          const cellText = document.createTextNode('')
-          cell.appendChild(cellText)
-          row.appendChild(cell)
-        } else if (date > this.daysInMonth(month, year)) {
-          break
-        } else {
-          const cell = document.createElement('td')
-          const cellText = document.createTextNode(date)
-          if (date === this.date.getDate() && year === this.date.getFullYear() && month === this.date.getMonth()) {
-            cell.classList.add('bg-info')
-          } // color today's date
-          cell.appendChild(cellText)
-          row.appendChild(cell)
-          date++
-        }
+    for (let i = 1; i <= lastDate; i++) {
+      if (row.length >= 7) {
+        dateList.push(row)
+        row = new Array()
       }
 
-      this.tbl.appendChild(row) // appending each row into calendar body.
+      row.push(i)
+
+      if (i === lastDate) {
+        dateList.push(row)
+      }
     }
+
+    return dateList
   }
 
-  daysInMonth(iMonth, iYear) {
-    return 32 - new Date(iYear, iMonth, 32).getDate()
+  _dateChanged(e) {
+    console.log(e.currentTarget.value)
   }
 }
 
