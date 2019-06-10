@@ -21,10 +21,6 @@ class CalendarList extends LitElement {
           padding: 10px;
           flex: 1;
         }
-        .display > span {
-          font-weight: bold;
-          font-size: 2rem;
-        }
       `
     ]
   }
@@ -37,9 +33,7 @@ class CalendarList extends LitElement {
 
   render() {
     return html`
-      <div class="display">
-        <span>${this.months[this.month - 1]}, ${this.year}</span>
-      </div>
+      <h2>${this.months[this.month - 1]}, ${this.year}</h2>
 
       <calendar-list-body .firstDay="${this.firstDay}" .dateList="${this.dateList}"></calendar-list-body>
     `
