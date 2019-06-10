@@ -55,7 +55,7 @@ class CalendarList extends LitElement {
 
   _getDateList() {
     this.months =
-      this.months.length > 0
+      this.months && this.months.length === 12
         ? this.months
         : [
             'January',
@@ -71,7 +71,7 @@ class CalendarList extends LitElement {
             'November',
             'December'
           ]
-    this.days = this.days.length > 0 ? this.days : ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
+    this.days = this.days && this.days.length === 7 ? this.days : ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
     this.dateList = []
     const stdDate = new Date(this.year, this.month - 1)
     this.firstDay = stdDate.getDay()
