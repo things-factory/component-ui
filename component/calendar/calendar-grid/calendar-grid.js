@@ -1,11 +1,15 @@
 import { html, css, LitElement } from 'lit-element'
+import './calendar-grid-body'
 
 class CalendarGrid extends LitElement {
   static get properties() {
     return {
-      firstDay: Number,
       year: Number,
-      month: Number
+      month: Number,
+      days: Array,
+      months: Array,
+      dateList: Array,
+      events: Array
     }
   }
 
@@ -14,36 +18,6 @@ class CalendarGrid extends LitElement {
       section {
         padding: 30px;
       }
-      .grid-container {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-      }
-      .label-day {
-        text-align: right;
-        font-weight: 100;
-        padding-bottom: 10px;
-      }
-      .grid-item {
-        border: 1px solid #f5f5f5;
-        font-size: 1rem;
-        height: 90px;
-        padding-right: 10px;
-        padding-top: 10px;
-        text-align: right;
-        vertical-align: top;
-      }
-      .sunday {
-        color: red;
-      }
-      .saturday {
-        color: blue;
-      }
-      .dateBadge {
-        background-color: #ff3b30;
-        border-radius: 50%;
-        color: white;
-        padding: 5px 9px 5px 9px;
-      }
     `
   }
 
@@ -51,35 +25,16 @@ class CalendarGrid extends LitElement {
     return html`
       <section>
         <h2>${this.currentMonth}, ${this.currentYear}</h2>
-        <div class="grid-container" id="calendar">
-          ${(this.labelDay || []).map(
-            label => html`
-              <div class="label-day">${label}</div>
-            `
-          )}
-          ${(this.dateList || []).map(
-            dateRow => html`
-              ${dateRow.map(
-                (date, idx) => html`
-                  <div class="grid-item ${idx === 0 ? 'sunday' : idx === 6 ? 'saturday' : ''}">
-                    <span class="date ${date === this.currentDate ? 'dateBadge' : ''}">${date}</span>
-                  </div>
-                `
-              )}
-            `
-          )}
-        </div>
+        <calendar-grid-body .days="${this.days}" .dateList="${this.dateList}"></calendar-grid-body>
       </section>
     `
   }
 
   constructor() {
     super()
-    this.labelDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
-    this.date = new Date()
-    this.currentDate = this.date.getDate()
+    this.days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
 
-    const month = [
+    this.months = [
       'January',
       'February',
       'March',
@@ -93,46 +48,71 @@ class CalendarGrid extends LitElement {
       'November',
       'December'
     ]
-
-    this.currentMonth = month[this.date.getMonth()]
-    this.currentYear = this.date.getFullYear()
   }
 
-  updated(changedProps) {
-    if (changedProps.has('year') && changedProps.has('month')) {
-      this.date = new Date()
-      this.date.setFullYear(this.year, this.month - 1, 1)
-
-      const firstDay = this.date.getDay()
-      const lastDate = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0).getDate()
-
-      this.dateList = this._computeDateList(firstDay, lastDate)
-      this.requestUpdate()
+  updated(props) {
+    if (props.has('year') || props.has('month') || props.has('events')) {
+      this._getDateList()
     }
+  }
+
+  _getDateList() {
+    if (!this.year || !this.month) return
+    this.date = new Date()
+
+    this.date.setFullYear(this.year, this.month - 1, 1)
+
+    this.currentMonth = this.months[this.date.getMonth()]
+    this.currentYear = this.date.getFullYear()
+
+    const firstDay = this.date.getDay()
+    const lastDate = new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0).getDate()
+
+    this.dateList = this._computeDateList(firstDay, lastDate)
   }
 
   _computeDateList(firstDay, lastDate) {
     let dateList = []
     let row = []
+
     // firstDay is 6
     for (let i = 0; i < firstDay; i++) {
-      row.push('')
+      row.push({})
     }
 
-    for (let i = 1; i <= lastDate; i++) {
+    for (let date = 1; date <= lastDate; date++) {
       if (row.length >= 7) {
         dateList.push(row)
         row = new Array()
       }
 
-      row.push(i)
+      row.push({
+        date,
+        events: (this.events || []).filter(e => e.date === date),
+        isCurrentDate: this._isCurrentDate(date)
+      })
 
-      if (i === lastDate) {
+      if (date === lastDate) {
         dateList.push(row)
       }
     }
 
     return dateList
+  }
+
+  _isCurrentDate(date) {
+    const stdDate = new Date()
+
+    const currentDate = stdDate.getDate()
+    if (date !== currentDate) return false
+
+    const currentYear = stdDate.getFullYear()
+    if (this.year !== currentYear) return false
+
+    const currentMonth = stdDate.getMonth() + 1
+    if (this.month !== currentMonth) return false
+
+    return true
   }
 }
 
