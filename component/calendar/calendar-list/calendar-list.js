@@ -36,7 +36,13 @@ class CalendarList extends LitElement {
     return html`
       <h2>${this.months[this.month - 1]}, ${this.year}</h2>
 
-      <calendar-list-body .firstDay="${this.firstDay}" .dateList="${this.dateList}"></calendar-list-body>
+      <calendar-list-body
+        .firstDay="${this.firstDay}"
+        .dateList="${this.dateList}"
+        @clickTask="${event => {
+          this.dispatchEvent(new CustomEvent('clickTask', event))
+        }}"
+      ></calendar-list-body>
     `
   }
 

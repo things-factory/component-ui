@@ -79,8 +79,22 @@ class CalendarListBody extends LitElement {
 
                 <ul class="events" hidden>
                   ${(calendar.events || []).map(
-                    event => html`
-                      <li><span class="event-item" @click="${event.action}">${event.name}</span></li>
+                    task => html`
+                      <li>
+                        <span
+                          class="event-item"
+                          @click="${() => {
+                            this.dispatchEvent(
+                              new CustomEvent('clickTask', {
+                                detail: {
+                                  task
+                                }
+                              })
+                            )
+                          }}"
+                          >${task.name}</span
+                        >
+                      </li>
                     `
                   )}
                 </ul>
