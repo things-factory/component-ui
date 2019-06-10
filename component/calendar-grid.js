@@ -38,12 +38,19 @@ class CalendarGrid extends LitElement {
       .saturday {
         color: blue;
       }
+      .dateBadge {
+        background-color: #ff3b30;
+        border-radius: 50%;
+        color: white;
+        padding: 5px 9px 5px 9px;
+      }
     `
   }
 
   render() {
     return html`
       <section>
+        <h2>${this.currentMonth}, ${this.currentYear}</h2>
         <div class="grid-container" id="calendar">
           ${(this.labelDay || []).map(
             label => html`
@@ -54,7 +61,9 @@ class CalendarGrid extends LitElement {
             dateRow => html`
               ${dateRow.map(
                 (date, idx) => html`
-                  <div class="grid-item ${idx === 0 ? 'sunday' : idx === 6 ? 'saturday' : ''}">${date}</div>
+                  <div class="grid-item ${idx === 0 ? 'sunday' : idx === 6 ? 'saturday' : ''}">
+                    <span class="date ${date === this.currentDate ? 'dateBadge' : ''}">${date}</span>
+                  </div>
                 `
               )}
             `
@@ -66,7 +75,27 @@ class CalendarGrid extends LitElement {
 
   constructor() {
     super()
-    this.labelDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thurs', 'Fri', 'Sat']
+    this.labelDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat']
+    this.date = new Date()
+    this.currentDate = this.date.getDate()
+
+    const month = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ]
+
+    this.currentMonth = month[this.date.getMonth()]
+    this.currentYear = this.date.getFullYear()
   }
 
   updated(changedProps) {
