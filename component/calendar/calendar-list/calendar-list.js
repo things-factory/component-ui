@@ -8,7 +8,8 @@ class CalendarList extends LitElement {
       days: Array,
       year: Number,
       month: Number,
-      dateList: Array
+      dateList: Array,
+      events: Array
     }
   }
 
@@ -40,14 +41,14 @@ class CalendarList extends LitElement {
   }
 
   updated(props) {
-    if (props.has('year')) {
-      this._getDateList()
-    } else if (props.has('month')) {
+    if (props.has('year') || props.has('month') || props.has('events')) {
       this._getDateList()
     }
   }
 
   _getDateList() {
+    if (!this.year || !this.month) return
+
     this.months =
       this.months && this.months.length === 12
         ? this.months
@@ -79,7 +80,8 @@ class CalendarList extends LitElement {
       const day = this.days[(this.firstDay + date - 1) % 7]
       this.dateList.push({
         date,
-        day
+        day,
+        events: (this.events || []).filter(e => e.date === date)
       })
     }
   }
