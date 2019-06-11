@@ -27,6 +27,7 @@ class CalendarListBody extends LitElement {
       .date-container span.task-cnt {
         flex: 1;
         text-align: right;
+        color: #888;
       }
       .calendar > li.sunday {
         color: red;
@@ -42,6 +43,7 @@ class CalendarListBody extends LitElement {
       .calendar ul.tasks {
         list-style: none;
         color: black;
+        padding-top: 10px;
       }
     `
   }
@@ -74,7 +76,13 @@ class CalendarListBody extends LitElement {
                 <div class="date-container">
                   <span class="date">${calendar.date}</span>
                   <span class="day">${calendar.day}</span>
-                  <span class="task-cnt">${calendar.tasks.length > 0 ? calendar.tasks.length : ''}</span>
+                  <span class="task-cnt"
+                    >${calendar.tasks.length > 0
+                      ? calendar.tasks.length == 1
+                        ? calendar.tasks.length + ' task'
+                        : calendar.tasks.length + ' tasks'
+                      : ''}</span
+                  >
                 </div>
 
                 <ul class="tasks" hidden>
