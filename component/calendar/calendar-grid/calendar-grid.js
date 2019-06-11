@@ -9,7 +9,7 @@ class CalendarGrid extends LitElement {
       days: Array,
       months: Array,
       dateList: Array,
-      events: Array
+      tasks: Array
     }
   }
 
@@ -25,7 +25,11 @@ class CalendarGrid extends LitElement {
     return html`
       <section>
         <h2>${this.currentMonth}, ${this.currentYear}</h2>
-        <calendar-grid-body .days="${this.days}" .dateList="${this.dateList}"></calendar-grid-body>
+        <calendar-grid-body
+          .days="${this.days}"
+          .dateList="${this.dateList}"
+          @clickTask="${event => this.dispatchEvent(new CustomEvent('clickTask', event))}"
+        ></calendar-grid-body>
       </section>
     `
   }
@@ -51,7 +55,7 @@ class CalendarGrid extends LitElement {
   }
 
   updated(props) {
-    if (props.has('year') || props.has('month') || props.has('events')) {
+    if (props.has('year') || props.has('month') || props.has('tasks')) {
       this._getDateList()
     }
   }
@@ -88,7 +92,7 @@ class CalendarGrid extends LitElement {
 
       row.push({
         date,
-        events: (this.events || []).filter(e => e.date === date),
+        tasks: (this.tasks || []).filter(e => e.date === date),
         isCurrentDate: this._isCurrentDate(date)
       })
 

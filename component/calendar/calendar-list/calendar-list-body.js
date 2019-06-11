@@ -24,7 +24,7 @@ class CalendarListBody extends LitElement {
       .date-container span {
         margin: auto 3px;
       }
-      .date-container span.event-cnt {
+      .date-container span.task-cnt {
         flex: 1;
         text-align: right;
       }
@@ -39,7 +39,7 @@ class CalendarListBody extends LitElement {
         font-size: 1.5rem;
       }
 
-      .calendar ul.events {
+      .calendar ul.tasks {
         list-style: none;
         color: black;
       }
@@ -66,23 +66,23 @@ class CalendarListBody extends LitElement {
                   ? 'saturday'
                   : ''}"
                 @click="${e => {
-                  if (calendar.events.length === 0 || e.target.classList.contains('event-item')) return
-                  const tasks = e.currentTarget.querySelector('.events')
+                  if (calendar.tasks.length === 0 || e.target.classList.contains('task-item')) return
+                  const tasks = e.currentTarget.querySelector('.tasks')
                   tasks.hidden = !tasks.hidden
                 }}"
               >
                 <div class="date-container">
                   <span class="date">${calendar.date}</span>
                   <span class="day">${calendar.day}</span>
-                  <span class="event-cnt">${calendar.events.length > 0 ? calendar.events.length : ''}</span>
+                  <span class="task-cnt">${calendar.tasks.length > 0 ? calendar.tasks.length : ''}</span>
                 </div>
 
-                <ul class="events" hidden>
-                  ${(calendar.events || []).map(
+                <ul class="tasks" hidden>
+                  ${(calendar.tasks || []).map(
                     task => html`
                       <li>
                         <span
-                          class="event-item"
+                          class="task-item"
                           @click="${() => {
                             this.dispatchEvent(
                               new CustomEvent('clickTask', {

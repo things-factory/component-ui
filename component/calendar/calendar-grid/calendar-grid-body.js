@@ -1,11 +1,13 @@
-import { LitElement, html, css } from 'lit-element'
+import { css, html, LitElement } from 'lit-element'
+import './calendar-grid-overlay'
 
 class CalendarGridBody extends LitElement {
   static get properties() {
     return {
       days: Array,
       dateList: Array,
-      currentDate: Number
+      currentDate: Number,
+      tasks: Array
     }
   }
 
@@ -52,8 +54,13 @@ class CalendarGridBody extends LitElement {
         color: black;
         font-size: 0.8rem;
         font-weight: 100;
+        padding-right: 5px;
       }
     `
+  }
+
+  get overlay() {
+    return this.shadowRoot.querySelector('#overlay')
   }
 
   render() {
@@ -71,8 +78,12 @@ class CalendarGridBody extends LitElement {
                 <div class="grid-item ${idx === 0 ? 'sunday' : idx === 6 ? 'saturday' : ''}">
                   <span class="date ${calendar.isCurrentDate ? 'dateBadge' : ''}">${calendar.date}</span>
 
-                  <span class="countBadge"
-                    >${calendar.events && calendar.events.length > 0 ? calendar.events.length + ' tasks' : ''}</span
+                  <span class="countBadge" @click="${() => this._showTaskOverlay(calendar.tasks)}"
+                    >${calendar.tasks && calendar.tasks.length > 0
+                      ? calendar.tasks.length == 1
+                        ? calendar.tasks.length + ' task'
+                        : calendar.tasks.length + ' tasks'
+                      : ''}</span
                   >
                 </div>
               `
@@ -80,7 +91,18 @@ class CalendarGridBody extends LitElement {
           `
         )}
       </div>
+
+      <calendar-grid-overlay
+        id="overlay"
+        .tasks="${this.tasks}"
+        @clickTask="${event => this.dispatchEvent(new CustomEvent('clickTask', event))}"
+      ></calendar-grid-overlay>
     `
+  }
+
+  _showTaskOverlay(tasks) {
+    this.tasks = tasks
+    this.overlay.open()
   }
 }
 
