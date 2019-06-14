@@ -55,7 +55,6 @@ class PopUp extends LitElement {
   constructor() {
     super()
     this.opened = false
-    this.addEventListener('click', this.close.bind(this))
   }
 
   render() {
