@@ -125,8 +125,10 @@ class FormMaster extends LitElement {
   }
 
   _adjustColumnProperty() {
+    const input = this.shadowRoot.querySelector('input')
+    if (!input) return
+    const inputWidth = input.offsetWidth
     const totalWidth = window.innerWidth
-    const inputWidth = this.shadowRoot.querySelector('input').offsetWidth
     const inputCount = Array.from(this.shadowRoot.querySelectorAll('input')).length
     let columnCount =
       Math.floor(totalWidth / inputWidth) < this.maxColumnCount
@@ -138,12 +140,20 @@ class FormMaster extends LitElement {
     this.style.setProperty('--grid-template-columns', `repeat(${columnCount}, 1fr)`)
   }
 
-  get getForm() {
+  get form() {
     return this.shadowRoot.querySelector('form')
   }
 
-  clear() {
-    this.getForm.reset()
+  getFields() {
+    return Array.from(this.shadowRoot.querySelector('form').children)
+  }
+
+  reset() {
+    this.form && this.form.reset()
+  }
+
+  submit() {
+    this.dispatchEvent(new CustomEvent('submit'))
   }
 
   focusById(id) {
@@ -152,12 +162,12 @@ class FormMaster extends LitElement {
   }
 
   checkValidity() {
-    return this.getForm.checkValidity()
+    return this.form.checkValidity()
   }
 
   serialize() {
     let data = {}
-    Array.from(this.getForm.children).forEach(children => {
+    Array.from(this.form.children).forEach(children => {
       if (children.type === 'number') {
         data[children.name] = parseFloat(children.value)
       } else {
@@ -169,7 +179,7 @@ class FormMaster extends LitElement {
   }
 
   getSearchParams() {
-    return FormSerialize(this.getForm)
+    return FormSerialize(this.form)
   }
 }
 
