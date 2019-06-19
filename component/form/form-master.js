@@ -25,8 +25,15 @@ class FormMaster extends LitElement {
   }
   static get properties() {
     return {
-      input: Array
+      input: Array,
+      maxColumnCount: Number
     }
+  }
+
+  constructor() {
+    super()
+    this.maxColumnCount = 4
+    window.onresize = this.onResizeHandler.bind(this)
   }
 
   render() {
@@ -54,6 +61,37 @@ class FormMaster extends LitElement {
         })}
       </form>
     `
+  }
+
+  onResizeHandler(event) {
+    // total width of screen
+    const totalWidth = event.currentTarget.innerWidth
+    const inputWidth = this.shadowRoot.querySelector('input').offsetWidth
+
+    const columnCount =
+      Math.floor(totalWidth / inputWidth) > this.maxColumnCount
+        ? this.maxColumnCount
+        : Math.floor(totalWidth / inputWidth)
+
+    let columnProperty = []
+
+    for (let i = 0; i < columnCount; i++) {
+      columnProperty.push('auto')
+    }
+    columnProperty = columnProperty.join(' ')
+    this.style.setProperty('--grid-template-columns', columnProperty)
+    console.log(columnProperty)
+
+    //max count for mobile 1, desktop 4
+
+    // if (changes.has('inputyt')) {
+    //   let inputLength = this.input
+    //     .map((input, i, arr) => `${input.gridWidth}px`)
+    //     .concat(['auto'])
+    //     .join(' ')
+
+    //   this.style.setProperty('--grid-template-columns', inputLength)
+    // }
   }
 
   getForm() {
