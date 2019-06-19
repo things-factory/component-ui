@@ -5,27 +5,34 @@ class FormMaster extends LitElement {
   static get styles() {
     return css`
       form {
-        padding: 30px;
+        padding: 10px;
         display: grid;
+        grid-gap: 10px;
         grid-template-columns: var(--grid-template-columns);
+        background-color: #e5e5e5;
       }
-      input {
-        border: solid 1px #32526a;
-        max-width: 200px;
-        padding-bottom: 10px;
+      input,
+      select {
+        margin: auto 0;
+        border: solid var(--input-border-width) #c4c5c6;
+        padding: var(--input-padding);
+        min-width: var(--input-width);
+        max-width: var(--input-width);
+        outline: none;
+        justify-self: center;
+        background-color: #fff;
       }
-      input:focus {
-        background-color: tomato;
-      }
-
-      ::placeholder {
-        font-size: 0.8rem;
+      select {
+        min-width: calc(var(--input-width) + 2 * var(--input-padding) + 2 * var(--input-border-width));
+        max-width: calc(var(--input-width) + 2 * var(--input-padding) + 2 * var(--input-border-width));
+        -webkit-appearance: none;
+        -webkit-border-radius: 0px;
       }
     `
   }
   static get properties() {
     return {
-      input: Array,
+      fields: Array,
       maxColumnCount: Number
     }
   }
@@ -33,23 +40,53 @@ class FormMaster extends LitElement {
   constructor() {
     super()
     this.maxColumnCount = 4
-    window.onresize = this.onResizeHandler.bind(this)
+    window.onresize = this._onResizeHandler.bind(this)
+    this.style.setProperty('--input-border-width', '1px')
+    this.style.setProperty('--input-padding', '5px')
+    this.style.setProperty('--input-width', '300px')
   }
 
   render() {
-    const inputElements = (this.input || []).map(i => {
-      const inputElement = document.createElement('input')
-      inputElement.name = i.name
-      inputElement.id = i.name
-      inputElement.type = i.type
-      if (i.readonly) inputElement.setAttribute('readonly', '')
-      if (i.disabled) inputElement.setAttribute('disabled', '')
-      if (i.placeholder) inputElement.placeholder = i.placeholder
-      if (i.type !== 'number' && typeof i.length === 'number') inputElement.length = i.length
-      if (i.type === 'number' && typeof i.min === 'number') inputElement.min = i.min
-      if (i.type === 'number' && typeof i.max === 'number') inputElement.max = i.max
+    const inputElements = (this.fields || []).map(i => {
+      let childElement
 
-      return inputElement
+      if (i.type === 'select') {
+        childElement = document.createElement('select')
+      } else {
+        childElement = document.createElement('input')
+        childElement.type = i.type
+      }
+
+      childElement.name = i.name
+      childElement.id = i.id ? i.id : i.name
+
+      if (i.value !== undefined) {
+        childElement.value = i.value
+      }
+
+      if (i.props && i.props instanceof Object && !Array.isArray(i.props)) {
+        for (let prop in i.props) {
+          if (prop === 'options') {
+            i.props[prop].forEach(opt => {
+              const option = document.createElement('option')
+              option.value = opt.value
+              option.innerText = opt.name
+              if (opt.selected) option.setAttribute('selected', '')
+              childElement.appendChild(option)
+
+              // childElement[opt.value] = new Option(opt.name, opt.value, null, opt.selected)
+            })
+          } else {
+            childElement.setAttribute(prop, i.props[prop])
+          }
+        }
+      }
+
+      if (i.attrs && Array.isArray(i.attrs)) {
+        i.attrs.forEach(attr => childElement.setAttribute(attr, ''))
+      }
+
+      return childElement
     })
 
     return html`
@@ -63,43 +100,50 @@ class FormMaster extends LitElement {
     `
   }
 
-  onResizeHandler(event) {
-    // total width of screen
-    const totalWidth = event.currentTarget.innerWidth
-    const inputWidth = this.shadowRoot.querySelector('input').offsetWidth
-
-    const columnCount =
-      Math.floor(totalWidth / inputWidth) > this.maxColumnCount
-        ? this.maxColumnCount
-        : Math.floor(totalWidth / inputWidth)
-
-    let columnProperty = []
-
-    for (let i = 0; i < columnCount; i++) {
-      columnProperty.push('auto')
-    }
-    columnProperty = columnProperty.join(' ')
-    this.style.setProperty('--grid-template-columns', columnProperty)
-    console.log(columnProperty)
-
-    //max count for mobile 1, desktop 4
-
-    // if (changes.has('inputyt')) {
-    //   let inputLength = this.input
-    //     .map((input, i, arr) => `${input.gridWidth}px`)
-    //     .concat(['auto'])
-    //     .join(' ')
-
-    //   this.style.setProperty('--grid-template-columns', inputLength)
-    // }
+  firstUpdated() {
+    this._adjustColumnProperty()
   }
 
-  getForm() {
+  updated(changedProps) {
+    if (changedProps.has('fields')) {
+      this._checkInputValidity()
+    }
+  }
+
+  _checkInputValidity() {
+    const names = this.fields.map(i => i.name)
+    const result = names.every(name => {
+      return names.indexOf(name) === names.lastIndexOf(name)
+    })
+    if (!result) {
+      throw new Error('Field name is duplicated.')
+    }
+  }
+
+  _onResizeHandler() {
+    this._adjustColumnProperty()
+  }
+
+  _adjustColumnProperty() {
+    const totalWidth = window.innerWidth
+    const inputWidth = this.shadowRoot.querySelector('input').offsetWidth
+    const inputCount = Array.from(this.shadowRoot.querySelectorAll('input')).length
+    let columnCount =
+      Math.floor(totalWidth / inputWidth) < this.maxColumnCount
+        ? Math.floor(totalWidth / inputWidth)
+        : this.maxColumnCount > inputCount
+        ? inputCount
+        : this.maxColumnCount
+
+    this.style.setProperty('--grid-template-columns', `repeat(${columnCount}, 1fr)`)
+  }
+
+  get getForm() {
     return this.shadowRoot.querySelector('form')
   }
 
   clear() {
-    this.getForm().reset()
+    this.getForm.reset()
   }
 
   focusById(id) {
@@ -108,12 +152,24 @@ class FormMaster extends LitElement {
   }
 
   checkValidity() {
-    return this.getForm().checkValidity()
+    return this.getForm.checkValidity()
   }
 
   serialize() {
-    //transform data into json
-    return FormSerialize(this.getForm())
+    let data = {}
+    Array.from(this.getForm.children).forEach(children => {
+      if (children.type === 'number') {
+        data[children.name] = parseFloat(children.value)
+      } else {
+        data[children.name] = children.value
+      }
+    })
+
+    return data
+  }
+
+  getSearchParams() {
+    return FormSerialize(this.getForm)
   }
 }
 
