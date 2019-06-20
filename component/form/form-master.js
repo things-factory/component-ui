@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit-element'
 import './custom-input'
+import './custom-select'
 import * as FormSerialize from 'form-serialize'
 
 class FormMaster extends LitElement {
@@ -21,7 +22,7 @@ class FormMaster extends LitElement {
           var(--form-input-width, 300px) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
         );
         max-width: calc(
-          var(--iform-nput-width) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
+          var(--form-input-width) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
         );
         -webkit-appearance: none;
         -webkit-border-radius: 0px;
@@ -54,7 +55,9 @@ class FormMaster extends LitElement {
         ${(this.fields || []).map(
           field => html`
             ${field.type === 'select'
-              ? html``
+              ? html`
+                  <custom-select .field="${field}"></custom-select>
+                `
               : html`
                   <custom-input .field="${field}"></custom-input>
                 `}
