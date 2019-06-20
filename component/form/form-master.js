@@ -33,14 +33,15 @@ class FormMaster extends LitElement {
   static get properties() {
     return {
       fields: Array,
-      maxColumnCount: Number
+      maxColumnCount: Number,
+      initFocus: String
     }
   }
 
   constructor() {
     super()
     this.maxColumnCount = 4
-    window.onresize = this._onResizeHandler.bind(this)
+    window.onresize = this._adjustColumnProperty.bind(this)
     this.style.setProperty('--input-border-width', '1px')
     this.style.setProperty('--input-padding', '5px')
     this.style.setProperty('--input-width', '300px')
@@ -90,7 +91,13 @@ class FormMaster extends LitElement {
     })
 
     return html`
-      <form>
+      <form
+        @keypress="${e => {
+          if (e.keyCode === 13) {
+            this.submit()
+          }
+        }}"
+      >
         ${inputElements.map(i => {
           return html`
             ${i}
@@ -100,14 +107,21 @@ class FormMaster extends LitElement {
     `
   }
 
-  firstUpdated() {
-    this._adjustColumnProperty()
-  }
-
   updated(changedProps) {
     if (changedProps.has('fields')) {
       this._checkInputValidity()
+      this._adjustColumnProperty()
+      this._initFocus()
     }
+  }
+
+  _initFocus() {
+    let targetInput = this.initFocus
+      ? this.form.querySelector(`#${this.initFocus}`)
+        ? this.form.querySelector(`#${this.initFocus}`)
+        : this.form.firstElementChild
+      : this.form.firstElementChild
+    targetInput.focus()
   }
 
   _checkInputValidity() {
@@ -120,16 +134,12 @@ class FormMaster extends LitElement {
     }
   }
 
-  _onResizeHandler() {
-    this._adjustColumnProperty()
-  }
-
   _adjustColumnProperty() {
-    const input = this.shadowRoot.querySelector('input')
-    if (!input) return
-    const inputWidth = input.offsetWidth
+    const inputElements = Array.from(this.form.children)
+    if (inputElements.length === 0) return
+    const inputWidth = inputElements[0].offsetWidth
     const totalWidth = window.innerWidth
-    const inputCount = Array.from(this.shadowRoot.querySelectorAll('input')).length
+    const inputCount = inputElements.length
     let columnCount =
       Math.floor(totalWidth / inputWidth) < this.maxColumnCount
         ? Math.floor(totalWidth / inputWidth)
