@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit-element'
 import './custom-input'
 import './custom-select'
-import * as FormSerialize from 'form-serialize'
 
 class FormMaster extends LitElement {
   static get styles() {
@@ -19,6 +18,7 @@ class FormMaster extends LitElement {
       }
     `
   }
+
   static get properties() {
     return {
       fields: Array,
@@ -49,7 +49,15 @@ class FormMaster extends LitElement {
                   <custom-select .field="${field}"></custom-select>
                 `
               : html`
-                  <custom-input .field="${field}"></custom-input>
+                  <custom-input
+                    id="${field.id || field.name}"
+                    name="${field.name || field.id}"
+                    .props="${field.props}"
+                    .attrs="${field.attrs}"
+                    .value="${field.value}"
+                    valueField="${field.valueField}"
+                    displayField="${field.displayField}"
+                  ></custom-input>
                 `}
           `
         )}
@@ -66,12 +74,14 @@ class FormMaster extends LitElement {
   }
 
   _initFocus() {
-    let targetInput = this.initFocus
-      ? this.form.querySelector(`#${this.initFocus}`)
-        ? this.form.querySelector(`#${this.initFocus}`)
-        : this.form.firstElementChild
-      : this.form.firstElementChild
-    targetInput.focus()
+    let targetInput
+    if (this.initFocus) {
+      targetInput = this.form.querySelector(`#${this.initFocus}`)
+    } else {
+      targetInput = this.form.firstElementChild
+    }
+
+    if (targetInput) targetInput.focus()
   }
 
   _checkInputValidity() {
@@ -139,7 +149,12 @@ class FormMaster extends LitElement {
   }
 
   getSearchParams() {
-    return FormSerialize(this.form)
+    let searchParam = new URLSearchParams()
+    const data = this.serialize()
+    const fields = this.getFields()
+    fields.forEach(field => searchParam.append(field.name, field.value))
+
+    return decodeURI(searchParam)
   }
 }
 

@@ -18,33 +18,74 @@ class CustomInput extends LitElement {
   }
   static get properties() {
     return {
-      field: Object
+      id: String,
+      name: String,
+      type: String,
+      props: Object,
+      attrs: Array,
+      valueField: String,
+      displayField: String,
+      value: String
     }
   }
 
   render() {
-    const inputField = document.createElement('input')
-    inputField.type = this.field.type
-    inputField.name = this.field.name
-    inputField.id = this.field.id || this.field.name
+    return html`
+      <input id="${this.id}" name="${this.name}" type="${this.type}" value="${this._displayValue || ''}" />
+    `
+  }
 
-    if (this.field.value !== undefined) {
-      inputField.value = this.field.value
-    }
+  get input() {
+    return this.shadowRoot.querySelector('input')
+  }
 
-    if (this.field.props && this.field.props instanceof Object && !Array.isArray(this.field.props)) {
-      for (let prop in this.field.props) {
-        inputField.setAttribute(prop, this.field.props[prop])
+  get value() {
+    return this._value
+  }
+
+  set value(value) {
+    this._value = this._isObject(value)
+      ? (this.valueField && value[this.valueField]) || value[Object.keys(value)[0]]
+      : value
+    this._displayValue = this._isObject(value)
+      ? (this.displayField && value[this.displayField]) || value[Object.keys(value)[0]]
+      : value
+  }
+
+  updated(changeProps) {
+    if (changeProps.has('props')) {
+      if (this._isObject(this.props)) {
+        for (let prop in this.props) {
+          this.input.setAttribute(prop, this.props[prop])
+        }
       }
     }
 
-    if (this.field.attrs && Array.isArray(this.field.attrs)) {
-      this.field.attrs.forEach(attr => inputField.setAttribute(attr, ''))
+    if (changeProps.has('attrs')) {
+      if (this.attrs && Array.isArray(this.attrs)) {
+        this.attrs.forEach(attr => this.input.setAttribute(attr, ''))
+      }
     }
+  }
 
-    return html`
-      ${inputField}
-    `
+  _isObject(value) {
+    return value instanceof Object && !Array.isArray(value)
+  }
+
+  focus() {
+    this.input.focus()
+  }
+
+  select() {
+    this.input.select()
+  }
+
+  blur() {
+    this.input.blur()
+  }
+
+  checkValidity() {
+    return this.input.checkValidity()
   }
 }
 
