@@ -17,16 +17,6 @@ class FormMaster extends LitElement {
       custom-select {
         justify-self: center;
       }
-      custom-input {
-        min-width: calc(
-          var(--form-input-width, 300px) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
-        );
-        max-width: calc(
-          var(--form-input-width) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
-        );
-        -webkit-appearance: none;
-        -webkit-border-radius: 0px;
-      }
     `
   }
   static get properties() {

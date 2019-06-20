@@ -9,10 +9,16 @@ class CustomSelect extends LitElement {
         border-width: var(--form-input-border-width, 1px);
         border-color: var(--form-input-border-color, #c4c5c6);
         padding: var(--form-input-padding, 5px);
-        min-width: var(--form-input-width, 300px);
-        max-width: var(--form-input-width, 300px);
         outline: var(--form-input-outline, none);
         background-color: var(--form-input-background-color, #fff);
+        min-width: calc(
+          var(--form-input-width, 300px) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
+        );
+        max-width: calc(
+          var(--form-input-width) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
+        );
+        -webkit-appearance: none;
+        -webkit-border-radius: 0px;
       }
     `
   }
@@ -27,21 +33,31 @@ class CustomSelect extends LitElement {
     selectField.name = this.field.name
     selectField.id = this.field.id || this.field.name
 
-    if (this.field.value !== undefined) {
-      selectField.value = this.field.value
+    this.field = {
+      options: [
+        {
+          name: 'opt1',
+          value: 'value_of_opt1'
+        },
+        {
+          name: 'opt2',
+          value: 'value_of_opt2',
+          selected: true
+        },
+        {
+          name: 'opt3',
+          value: 'value_of_opt3'
+        }
+      ]
     }
 
-    if (this.field.props && this.field.props instanceof Object && !Array.isArray(this.field.props)) {
-      for (let prop in this.field.props) {
-        this.field.props[prop].forEach(opt => {
-          const option = document.createElement('option')
-          option.value = opt.value
-          option.innerText = opt.name
-          if (opt.selected) option.setAttribute('selected', '')
-          selectField.appendChild(option)
-        })
-      }
-    }
+    this.field.options.forEach(opt => {
+      const option = document.createElement('option')
+      option.value = opt.value
+      option.innerText = opt.name
+      if (opt.selected) option.setAttribute('selected', '')
+      selectField.appendChild(option)
+    })
 
     if (this.field.attrs && Array.isArray(this.field.attrs)) {
       this.field.attrs.forEach(attr => selectField.setAttribute(attr, ''))
