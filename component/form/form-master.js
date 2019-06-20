@@ -8,23 +8,29 @@ class FormMaster extends LitElement {
         padding: 10px;
         display: grid;
         grid-gap: 10px;
-        grid-template-columns: var(--grid-template-columns);
-        background-color: #e5e5e5;
+        grid-template-columns: var(--form-grid-template-columns);
+        background-color: var(--form-background-color, #e5e5e5);
       }
       input,
       select {
         margin: auto 0;
-        border: solid var(--input-border-width) #c4c5c6;
-        padding: var(--input-padding);
-        min-width: var(--input-width);
-        max-width: var(--input-width);
-        outline: none;
+        border-style: var(--form-input-border-style, solid);
+        border-width: var(--form-input-border-width, 1px);
+        border-color: var(--form-input-border-color, #c4c5c6);
+        padding: var(--form-input-padding, 5px);
+        min-width: var(--form-input-width, 300px);
+        max-width: var(--form-input-width, 300px);
+        outline: var(--form-input-outline, none);
+        background-color: var(--form-input-background-color, #fff);
         justify-self: center;
-        background-color: #fff;
       }
       select {
-        min-width: calc(var(--input-width) + 2 * var(--input-padding) + 2 * var(--input-border-width));
-        max-width: calc(var(--input-width) + 2 * var(--input-padding) + 2 * var(--input-border-width));
+        min-width: calc(
+          var(--form-input-width, 300px) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
+        );
+        max-width: calc(
+          var(--iform-nput-width) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
+        );
         -webkit-appearance: none;
         -webkit-border-radius: 0px;
       }
@@ -42,9 +48,6 @@ class FormMaster extends LitElement {
     super()
     this.maxColumnCount = 4
     window.onresize = this._adjustColumnProperty.bind(this)
-    this.style.setProperty('--input-border-width', '1px')
-    this.style.setProperty('--input-padding', '5px')
-    this.style.setProperty('--input-width', '300px')
   }
 
   render() {
@@ -74,8 +77,6 @@ class FormMaster extends LitElement {
               option.innerText = opt.name
               if (opt.selected) option.setAttribute('selected', '')
               childElement.appendChild(option)
-
-              // childElement[opt.value] = new Option(opt.name, opt.value, null, opt.selected)
             })
           } else {
             childElement.setAttribute(prop, i.props[prop])
@@ -147,7 +148,7 @@ class FormMaster extends LitElement {
         ? inputCount
         : this.maxColumnCount
 
-    this.style.setProperty('--grid-template-columns', `repeat(${columnCount}, 1fr)`)
+    this.style.setProperty('--form-grid-template-columns', `repeat(${columnCount}, 1fr)`)
   }
 
   get form() {
