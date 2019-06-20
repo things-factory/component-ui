@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit-element'
+import './custom-input'
 import * as FormSerialize from 'form-serialize'
 
 class FormMaster extends LitElement {
@@ -11,20 +12,11 @@ class FormMaster extends LitElement {
         grid-template-columns: var(--form-grid-template-columns);
         background-color: var(--form-background-color, #e5e5e5);
       }
-      input,
-      select {
-        margin: auto 0;
-        border-style: var(--form-input-border-style, solid);
-        border-width: var(--form-input-border-width, 1px);
-        border-color: var(--form-input-border-color, #c4c5c6);
-        padding: var(--form-input-padding, 5px);
-        min-width: var(--form-input-width, 300px);
-        max-width: var(--form-input-width, 300px);
-        outline: var(--form-input-outline, none);
-        background-color: var(--form-input-background-color, #fff);
+      custom-input,
+      custom-select {
         justify-self: center;
       }
-      select {
+      custom-input {
         min-width: calc(
           var(--form-input-width, 300px) + 2 * var(--form-input-padding, 5px) + 2 * var(--form-input-border-width, 1px)
         );
@@ -51,46 +43,6 @@ class FormMaster extends LitElement {
   }
 
   render() {
-    const inputElements = (this.fields || []).map(i => {
-      let childElement
-
-      if (i.type === 'select') {
-        childElement = document.createElement('select')
-      } else {
-        childElement = document.createElement('input')
-        childElement.type = i.type
-      }
-
-      childElement.name = i.name
-      childElement.id = i.id ? i.id : i.name
-
-      if (i.value !== undefined) {
-        childElement.value = i.value
-      }
-
-      if (i.props && i.props instanceof Object && !Array.isArray(i.props)) {
-        for (let prop in i.props) {
-          if (prop === 'options') {
-            i.props[prop].forEach(opt => {
-              const option = document.createElement('option')
-              option.value = opt.value
-              option.innerText = opt.name
-              if (opt.selected) option.setAttribute('selected', '')
-              childElement.appendChild(option)
-            })
-          } else {
-            childElement.setAttribute(prop, i.props[prop])
-          }
-        }
-      }
-
-      if (i.attrs && Array.isArray(i.attrs)) {
-        i.attrs.forEach(attr => childElement.setAttribute(attr, ''))
-      }
-
-      return childElement
-    })
-
     return html`
       <form
         @keypress="${e => {
@@ -99,11 +51,15 @@ class FormMaster extends LitElement {
           }
         }}"
       >
-        ${inputElements.map(i => {
-          return html`
-            ${i}
+        ${(this.fields || []).map(
+          field => html`
+            ${field.type === 'select'
+              ? html``
+              : html`
+                  <custom-input .field="${field}"></custom-input>
+                `}
           `
-        })}
+        )}
       </form>
     `
   }
