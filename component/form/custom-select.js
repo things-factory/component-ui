@@ -24,48 +24,92 @@ class CustomSelect extends LitElement {
   }
   static get properties() {
     return {
-      field: Object
+      id: String,
+      name: String,
+      options: Array,
+      props: Object,
+      attrs: Array,
+      value: String,
+      autofocus: Boolean
     }
   }
 
   render() {
-    const selectField = document.createElement('select')
-    selectField.name = this.field.name
-    selectField.id = this.field.id || this.field.name
-
-    this.field = {
-      options: [
-        {
-          name: 'opt1',
-          value: 'value_of_opt1'
-        },
-        {
-          name: 'opt2',
-          value: 'value_of_opt2',
-          selected: true
-        },
-        {
-          name: 'opt3',
-          value: 'value_of_opt3'
-        }
-      ]
-    }
-
-    this.field.options.forEach(opt => {
-      const option = document.createElement('option')
-      option.value = opt.value
-      option.innerText = opt.name
-      if (opt.selected) option.setAttribute('selected', '')
-      selectField.appendChild(option)
-    })
-
-    if (this.field.attrs && Array.isArray(this.field.attrs)) {
-      this.field.attrs.forEach(attr => selectField.setAttribute(attr, ''))
-    }
-
     return html`
-      ${selectField}
+      <select name="${this.name}" ?autofocus="${this.autofocus}">
+        ${(this.options || []).map(
+          option => html`
+            <option value="${option.value}" ?selected="${this._value === option.value}">${option.name}</option>
+          `
+        )}
+      </select>
     `
+  }
+
+  get select() {
+    return this.shadowRoot.querySelector('select')
+  }
+
+  firstUpdated() {
+    this.dispatchEvent(new CustomEvent('load'))
+  }
+
+  get value() {
+    if (this.select) {
+      return this.select.value
+    } else {
+      this._value
+    }
+  }
+
+  set value(value) {
+    if (this.select) {
+      this.select.value = value
+    } else {
+      this._value = value
+    }
+  }
+
+  firstUpdated() {
+    this.dispatchEvent(new CustomEvent('load'))
+  }
+
+  updated(changeProps) {
+    if (changeProps.has('props')) {
+      if (this._isObject(this.props)) {
+        for (let prop in this.props) {
+          if (this.props[prop]) {
+            this.select.setAttribute(prop, this.props[prop])
+            this.setAttribute(prop, this.props[prop])
+          }
+        }
+      }
+    }
+
+    if (changeProps.has('attrs')) {
+      if (this.attrs && Array.isArray(this.attrs)) {
+        this.attrs.forEach(attr => {
+          this.select.setAttribute(attr, '')
+          this.setAttribute(attr, '')
+        })
+      }
+    }
+  }
+
+  _isObject(value) {
+    return value instanceof Object && !Array.isArray(value)
+  }
+
+  focus() {
+    this.select.focus()
+  }
+
+  blur() {
+    this.select.blur()
+  }
+
+  checkValidity() {
+    return this.select.checkValidity()
   }
 }
 

@@ -20,18 +20,28 @@ class CustomInput extends LitElement {
     return {
       id: String,
       name: String,
+      placeholder: String,
       type: String,
       props: Object,
       attrs: Array,
       valueField: String,
       displayField: String,
-      value: String
+      value: String,
+      autofocus: Boolean
     }
   }
 
   render() {
     return html`
-      <input id="${this.id}" name="${this.name}" type="${this.type}" value="${this._displayValue || ''}" />
+      <input
+        id="${this.id}"
+        name="${this.name}"
+        placeholder="${this.placeholder}"
+        type="${this.type || 'text'}"
+        value="${this._displayValue || ''}"
+        @input="${e => (this._value = e.currentTarget.value)}"
+        ?autofocus="${this.autofocus}"
+      />
     `
   }
 
@@ -52,18 +62,28 @@ class CustomInput extends LitElement {
       : value
   }
 
+  firstUpdated() {
+    this.dispatchEvent(new CustomEvent('load'))
+  }
+
   updated(changeProps) {
     if (changeProps.has('props')) {
       if (this._isObject(this.props)) {
         for (let prop in this.props) {
-          this.input.setAttribute(prop, this.props[prop])
+          if (this.props[prop]) {
+            this.input.setAttribute(prop, this.props[prop])
+            this.setAttribute(prop, this.props[prop])
+          }
         }
       }
     }
 
     if (changeProps.has('attrs')) {
       if (this.attrs && Array.isArray(this.attrs)) {
-        this.attrs.forEach(attr => this.input.setAttribute(attr, ''))
+        this.attrs.forEach(attr => {
+          this.input.setAttribute(attr, '')
+          this.setAttribute(attr, '')
+        })
       }
     }
   }

@@ -6,9 +6,9 @@ class FormMaster extends LitElement {
   static get styles() {
     return css`
       form {
-        padding: 10px;
+        padding: var(--form-padding: 10px);
         display: grid;
-        grid-gap: 10px;
+        grid-gap: var(--form-grid-gap: 1px);
         grid-template-columns: var(--form-grid-template-columns);
         background-color: var(--form-background-color, #e5e5e5);
       }
@@ -23,14 +23,9 @@ class FormMaster extends LitElement {
     return {
       fields: Array,
       maxColumnCount: Number,
-      initFocus: String
+      initFocus: String,
+      _loadedCount: Number
     }
-  }
-
-  constructor() {
-    super()
-    this.maxColumnCount = 4
-    window.onresize = this._adjustColumnProperty.bind(this)
   }
 
   render() {
@@ -46,7 +41,16 @@ class FormMaster extends LitElement {
           field => html`
             ${field.type === 'select'
               ? html`
-                  <custom-select .field="${field}"></custom-select>
+                  <custom-select
+                    id="${field.id || field.name}"
+                    name="${field.name || field.id}"
+                    .props="${field.props}"
+                    .attrs="${field.attrs}"
+                    .value="${field.value}"
+                    .autofocus="${this.initFocus === field.name}"
+                    @load="${this._onInputLoad}"
+                    .options="${field.options}"
+                  ></custom-select>
                 `
               : html`
                   <custom-input
@@ -54,9 +58,11 @@ class FormMaster extends LitElement {
                     name="${field.name || field.id}"
                     .props="${field.props}"
                     .attrs="${field.attrs}"
+                    .valueField="${field.valueField}"
+                    .displayField="${field.displayField}"
                     .value="${field.value}"
-                    valueField="${field.valueField}"
-                    displayField="${field.displayField}"
+                    .autofocus="${this.initFocus === field.name}"
+                    @load="${this._onInputLoad}"
                   ></custom-input>
                 `}
           `
@@ -65,23 +71,17 @@ class FormMaster extends LitElement {
     `
   }
 
+  constructor() {
+    super()
+    this.maxColumnCount = 4
+    this._loadedCount = 0
+    window.onresize = this._adjustColumnProperty.bind(this)
+  }
+
   updated(changedProps) {
     if (changedProps.has('fields')) {
       this._checkInputValidity()
-      this._adjustColumnProperty()
-      this._initFocus()
     }
-  }
-
-  _initFocus() {
-    let targetInput
-    if (this.initFocus) {
-      targetInput = this.form.querySelector(`#${this.initFocus}`)
-    } else {
-      targetInput = this.form.firstElementChild
-    }
-
-    if (targetInput) targetInput.focus()
   }
 
   _checkInputValidity() {
@@ -91,6 +91,15 @@ class FormMaster extends LitElement {
     })
     if (!result) {
       throw new Error('Field name is duplicated.')
+    }
+  }
+
+  _onInputLoad() {
+    this._loadedCount++
+    if (this._loadedCount === this.fields.length - 1) {
+      this._adjustColumnProperty()
+      this._initFocus()
+      this.dispatchEvent(new CustomEvent('load'))
     }
   }
 
@@ -108,6 +117,10 @@ class FormMaster extends LitElement {
         : this.maxColumnCount
 
     this.style.setProperty('--form-grid-template-columns', `repeat(${columnCount}, 1fr)`)
+  }
+
+  _initFocus() {
+    if (!this.initFocus) this.getFields()[0].focus()
   }
 
   get form() {
