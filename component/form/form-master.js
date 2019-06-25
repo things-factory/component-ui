@@ -6,9 +6,9 @@ class FormMaster extends LitElement {
   static get styles() {
     return css`
       form {
-        padding: var(--form-padding: 10px);
         display: grid;
-        grid-gap: var(--form-grid-gap: 1px);
+        padding: var(--form-padding, 10px);
+        grid-gap: var(--form-grid-gap, 10px);
         grid-template-columns: var(--form-grid-template-columns);
         background-color: var(--form-background-color, #e5e5e5);
       }
