@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit-element'
 import './custom-input'
 import './custom-select'
+import './form-paginator'
 
 class FormMaster extends LitElement {
   static get styles() {
@@ -22,9 +23,11 @@ class FormMaster extends LitElement {
   static get properties() {
     return {
       fields: Array,
+      maxRowCount: Number,
       maxColumnCount: Number,
       initFocus: String,
-      _loadedCount: Number
+      _loadedCount: Number,
+      pageCount: Number
     }
   }
 
@@ -68,11 +71,14 @@ class FormMaster extends LitElement {
           `
         )}
       </form>
+
+      <form-paginator .pageCount="${this.pageCount}" @pageChange="${this._onPageChangeHandler}"></form-paginator>
     `
   }
 
   constructor() {
     super()
+    this.maxRowCount = 2
     this.maxColumnCount = 4
     this._loadedCount = 0
     window.onresize = this._adjustColumnProperty.bind(this)
@@ -116,6 +122,14 @@ class FormMaster extends LitElement {
         ? inputCount
         : this.maxColumnCount
 
+    if (columnCount === 1) {
+      this.pageCount = Math.ceil(inputElements.length / this.maxRowCount)
+      this._filterActiveFields(this.currentPage)
+    } else {
+      this.pageCount = 1
+      this._activeFields()
+    }
+
     this.style.setProperty('--form-grid-template-columns', `repeat(${columnCount}, 1fr)`)
   }
 
@@ -128,7 +142,11 @@ class FormMaster extends LitElement {
   }
 
   getFields() {
-    return Array.from(this.shadowRoot.querySelector('form').children)
+    return Array.from(this.form.children)
+  }
+
+  getFieldByName(name) {
+    return this.getFields().filter(field => field.name === name)[0]
   }
 
   reset() {
@@ -168,6 +186,34 @@ class FormMaster extends LitElement {
     fields.forEach(field => searchParam.append(field.name, field.value))
 
     return decodeURI(searchParam)
+  }
+
+  _onPageChangeHandler(event) {
+    this.currentPage = event.currentTarget.currentPage
+    this._filterActiveFields(this.currentPage)
+  }
+
+  _activeFields() {
+    this.getFields().forEach(field => (field.hidden = false))
+  }
+
+  _filterActiveFields(currentPage = 1) {
+    if (this.pageCount > 1) {
+      const fields = this.getFields()
+
+      const chunkedFields = []
+      for (let i = 0, j = fields.length; i < j; i += this.maxRowCount) {
+        chunkedFields.push(fields.slice(i, i + this.maxRowCount))
+      }
+
+      chunkedFields.forEach((fields, idx) => {
+        if (currentPage === idx + 1) {
+          fields.forEach(field => (field.hidden = false))
+        } else {
+          fields.forEach(field => (field.hidden = true))
+        }
+      })
+    }
   }
 }
 
