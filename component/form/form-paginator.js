@@ -11,18 +11,15 @@ class FormPaginator extends LitElement {
   static get styles() {
     return css`
       :host {
-        display: grid;
+        display: block;
         background-color: var(--form-background-color, #e5e5e5);
-      }
-      #paginator-nav {
-        margin: auto;
-      }
-      #paginator-nav > .selector {
-        font-size: 1.8rem;
+        font-size: 1.5em;
+        line-height: 0.5em;
+        text-align: center;
         color: #c4c5c6;
       }
-      #paginator-nav > .selector[selected] {
-        font-size: 1.8rem;
+
+      [selected] {
         color: #6f6f6f;
       }
     `
@@ -37,23 +34,20 @@ class FormPaginator extends LitElement {
 
   render() {
     return html`
-      <div id="paginator-nav">
-        ${this.selectors.map(
-          page => html`
-            <span
-              class="selector"
-              page="${page}"
-              ?selected="${page == this.currentPage}"
-              @click="${() => {
-                this.currentPage = page
-                this.dispatchEvent(new CustomEvent('pageChange'))
-                this.requestUpdate()
-              }}"
-              >&bull;</span
-            >
-          `
-        )}
-      </div>
+      ${this.selectors.map(
+        page => html`
+          <span
+            page="${page}"
+            ?selected="${page == this.currentPage}"
+            @click="${() => {
+              this.currentPage = page
+              this.dispatchEvent(new CustomEvent('pageChange'))
+              this.requestUpdate()
+            }}"
+            >&bull;</span
+          >
+        `
+      )}
     `
   }
 
