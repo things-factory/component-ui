@@ -38,7 +38,6 @@ class SearchFormPaginator extends LitElement {
         .map(
           (_, page) => html`
             <span
-              page=${page}
               ?selected=${page == this.currentPage}
               @click=${e =>
                 this.dispatchEvent(

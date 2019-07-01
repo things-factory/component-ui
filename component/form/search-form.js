@@ -129,7 +129,6 @@ class SearchForm extends LitElement {
         .currentPage=${this.currentPage}
         @pagechanged=${e => {
           this.gotoPage(e.detail.page)
-          console.log(e)
         }}
       ></search-form-paginator>
     `
